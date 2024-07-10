@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>上传收款码</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .menu-item {
+            margin-bottom: 0px;
+            text-align: center;
+        }
+        .submit-button:hover {
+            background-color: #0056b3;
+        }
+        .preview-image {
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-2 cbox">
+        <div class="left-icon">
+            <img src="./img/ico-go-back.png" alt="返回" onclick="window.location='index.html'" style="width: 16px; height: 16px;">
+            <div class="flex title" style="left:40px;cursor:pointer;" onclick="window.location='index.html';">首页</div>
+        </div>
+        <div class="flex title">我的收款码</div>
+    </div>
+    <form id="uploadForm" enctype="multipart/form-data" onsubmit="return false;">
+        <div class="menu-item" style="justify-content: center;">
+            <!-- 图片预览容器 -->
+            <img id="preview-image" class="preview-image" src="" alt="收款码" style="max-width: 100%; display: none; margin-bottom: 20px;">
+            <span id="uploadPrompt" style="display: none;">请上传收款码</span>
+        </div>
+        <div class="menu-item" style="justify-content: center;">
+            <button type="button" id="uploadButton" class="submit-button">上传收款码</button>
+            <input id="file-upload" type="file" name="qrCode" accept="image/*" style="display: none;">
+        </div>
+    </form>
+    <script>
+        window.onload = function() {
+            // 检查用户是否已登录
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'check_session.php', true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (!data.success) {
+                        window.location.href = 'login.html'; // 如果未登录，重定向到登录页面
+                    }
+                } else {
+                    console.error('Error checking session:', xhr.statusText);
+                }
+            };
+            xhr.onerror = function() {
+                console.error('Network error while checking session.');
+            };
+            xhr.send();
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch the image URL on page load
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'manage_image.php', true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.success && data.image_url) {
+                        document.getElementById('preview-image').src = data.image_url;
+                        document.getElementById('preview-image').style.display = 'block';
+                    } else {
+                        document.getElementById('uploadPrompt').style.display = 'block';
+                    }
+                } else {
+                    console.error('Error fetching image URL:', xhr.statusText);
+                }
+            };
+            xhr.onerror = function() {
+                console.error('Network error while fetching image URL.');
+            };
+            xhr.send();
+
+            document.getElementById('uploadButton').addEventListener('click', function() {
+                document.getElementById('file-upload').click();
+            });
+
+            document.getElementById('file-upload').addEventListener('change', function(event) {
+                var file = event.target.files[0];
+                var previewImg = document.getElementById('preview-image');
+                var reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    document.getElementById('uploadPrompt').style.display = 'none';
+                };
+                
+                if (file) {
+                    reader.readAsDataURL(file);
+                }
+
+                // 自动提交表单
+                var formData = new FormData();
+                formData.append('qrCode', file);
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'manage_image.php', true);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.success) {
+                            alert('文件上传成功');
+                        } else {
+                            alert('文件上传失败: ' + data.message);
+                        }
+                    } else {
+                        alert('文件上传失败: ' + xhr.statusText);
+                    }
+                };
+                xhr.onerror = function() {
+                    alert('文件上传失败: 网络错误');
+                };
+                xhr.send(formData);
+            });
+        });
+    </script>
+</body>
+</html>

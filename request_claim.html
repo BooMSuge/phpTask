@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>申请领取</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            background: #fff;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between; /* 两端对齐，使输入框靠右 */
+            align-items: center; /* 使标签和输入框垂直居中 */
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="tel"]{
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #d4d4d4;
+            margin-right: 20px; /* 右边距20px */
+            -webkit-appearance: none !important; /* for Safari and Chrome */
+            -moz-appearance: none !important; /* for Firefox */
+            appearance: none !important; /* for other browsers */
+        }
+select {
+            width: 76%;
+            padding: 10px;
+            border: 1px solid #d4d4d4;
+            border-radius: 5px;
+            margin-right: 20px; /* 右边距20px */
+            -webkit-appearance: none !important; /* for Safari and Chrome */
+            -moz-appearance: none !important; /* for Firefox */
+            appearance: none !重要; /* for other browsers */
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 12px 20px;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        html, body {
+            height: 100%;  /* 使HTML和body元素高度充满视口 */
+            margin: 0;     /* 移除默认边距 */
+            display: flex;
+            flex-direction: column; /* 将内容垂直布局 */
+        }
+        .input {
+            padding: 5px 4px;
+            min-height: 20px;
+            line-height: 20px;
+            border: 1px solid #d4d4d4;
+            background: #fff;
+            vertical-align: middle;
+            color: #333;
+            font-size: 100%;
+            margin-left: 20px;
+        }
+        #claimForm {
+            flex: 1; /* 让表单填充所有可用空间，推动按钮到底部 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 居中表单内容 */
+        }
+        .menu-item {
+            margin-top: auto; /* 将按钮推到底部 */
+            background: none; /* 去除可能的背景设置 */
+        }
+        .form-container {
+            flex: 1;  /* 让form-container填充所有可用的垂直空间 */
+            display: flex;
+            flex-direction: column;  /* 垂直堆叠内部元素 */
+            justify-content: space-between; /* 在顶部内容和底部按钮之间创建空间 */
+        }
+        .button-disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+<div class="header-2 cbox">
+    <div class="left-icon">
+        <img src="./img/ico-go-back.png" alt="返回" onclick="window.location='index.html'" style="width: 16px; height: 16px;">
+        <div class="flex title" style="left:40px;cursor:pointer;" onclick="window.location='index.html';">首页</div>
+    </div>
+    <div class="flex title">申请领取</div>
+</div>
+
+<div class="form-container" style="padding-left:10px">
+    <form id="claimForm" onsubmit="return submitClaim();">
+        <div class="form-group" style="margin-top: 1rem;">
+            <label for="region" style='padding-life:10px;'>地区</label>
+            <select id="region" name="region" required>
+                <option value="">请选择地区</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="cardCode">卡密</label>
+            <input type="text" id="cardCode" name="cardCode" required>
+        </div>
+        <div class="form-group">
+            <label for="username">用户名</label>
+            <input type="text" id="username" name="username" value="用户名加载中..." readonly>
+        </div>
+        <div class="form-group">
+            <label for="phoneNumber">手机号</label>
+            <input type="tel" id="phoneNumber" name="phoneNumber" pattern="1[3-9]\d{9}">
+        </div>
+        <div class="menu-item">
+            <button type="submit" class="submit-button">点击领取</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 获取用户名
+        fetch('get_username.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('username').value = data.username;
+                } else {
+                    alert('无法加载用户名，请登录。');
+                    window.location.href = 'login.html';
+                }
+            })
+            .catch(error => {
+                alert('出错了，请刷新页面或稍后再试。');
+            });
+
+        // 获取地区选项
+        fetch('get_regions.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const regionSelect = document.getElementById('region');
+                    data.regions.forEach(region => {
+                        const option = document.createElement('option');
+                        option.value = region.name;
+                        option.textContent = region.name;
+                        regionSelect.appendChild(option);
+                    });
+                } else {
+                    alert('无法加载地区，请刷新页面重试。');
+                }
+            })
+            .catch(error => {
+                alert('出错了，请刷新页面或稍后再试。');
+            });
+    });
+
+    function submitClaim() {
+        event.preventDefault(); // 阻止表单默认提交行为
+
+        const submitButton = document.querySelector('.submit-button');
+        if (submitButton.classList.contains('button-disabled')) {
+            alert('请等待10秒后再尝试');
+            return false; // 停止函数执行
+        }
+
+        const cardCode = document.getElementById('cardCode').value;
+        const username = document.getElementById('username').value;
+        const phone = document.getElementById('phoneNumber').value;
+        const region = document.getElementById('region').value;
+
+        const formData = new URLSearchParams();
+        formData.append('cardCode', cardCode);
+        formData.append('username', username);
+        formData.append('phoneNumber', phone);
+        formData.append('region', region);
+
+        fetch('manage_claim.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('申请已提交成功');
+                    submitButton.classList.add('button-disabled');
+                    setTimeout(() => {
+                        submitButton.classList.remove('button-disabled');
+                    }, 10000); // 10秒后重新启用按钮
+                    window.location.href = 'task.html'; // 成功后跳转到 task.html 页面
+                } else {
+                    alert('提交失败: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('提交失败，请重试。');
+            });
+
+        return false; // 防止表单默认提交行为
+    }
+</script>
+</body>
+</html>

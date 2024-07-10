@@ -1,0 +1,137 @@
+body {
+            font-family: "Microsoft YaHei", sans-serif; /* 统一字体设置 */
+            max-width: 640px; /* 限制最大宽度，适应屏幕 */
+            margin: 0 auto; /* 水平居中 */
+            background: #f4f4f4; /* 背景色 */
+            color: #464545; /* 文本颜色 */
+            font-size: 16px; /* 基础字体大小 */
+        }
+.header-2 {
+    display: flex;
+    align-items: center; /* 垂直居中子项 */
+    justify-content: center; /* 水平居中标题 */
+    position: relative; /* 使绝对定位的子元素相对于此定位 */
+    height: 46px;
+    line-height: 46px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #e1e1e1;
+    color: #585858;
+}
+.info-item {
+    /* margin-top: 0.13333333333333333rem; */
+    display: flex;
+    align-items: center;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+    background: #ffffff;
+    justify-content: space-between;
+    /* margin-bottom: 0.16666666666666666rem; */
+    margin-top: 0px;
+    margin-bottom: 1px;
+    cursor: pointer;
+}
+.menu-item {
+    display: flex;
+    align-items: center; /* 垂直居中对齐 */
+        padding-left: 0.3rem;
+    padding-right: 0.3rem;
+    justify-content: space-between; /* 两端对齐 */
+    padding: 18px;
+    background: #ffffff;
+        margin-top: 0px;
+    margin-bottom: 1px;
+        cursor: pointer;
+}
+
+.info-text {
+    display: flex;
+    align-items: center;
+     margin-left: auto; /* 添加这行代码使得余额靠右显示 */
+    font-size: 0.72rem;
+    color: #999999;
+}
+.right-txt {
+    display: flex;
+    align-items: center;
+}
+
+.arr-right {
+    width: 0.3rem;
+    height: auto;
+    margin-left: 0.2rem;
+}
+
+.menu-link {
+    color: #0f0f0f;
+    text-decoration: none;
+    display: block;
+}
+       .right-txt {
+    display: flex;
+    align-items: center;
+}
+.right-txt .value {
+    font-size: 0.74rem;
+    color: #999999;
+}
+.right-txt .arr-right {
+    width: 0.3rem;
+    height: auto;
+    margin-left: 0.6rem;
+}
+.menu-link span {
+    margin-right: auto; /* 将标题推向左边 */
+}
+.size{
+    font-size: 14px;
+}
+.go-back {
+    left: 10px;
+}
+.left-icon {
+    position: absolute; /* 绝对定位 */
+    left: 4px;
+    display: flex;
+    align-items: center; /* 垂直居中图标 */
+}
+.left-icon img{
+    width: 20px;
+}
+.flex.title {
+    /* 不再需要绝对定位 */
+    cursor: pointer;
+}
+.ico.go-index {
+    position: absolute;
+    right: 10px;
+}
+
+.custom-file-upload {
+    border: 1px solid #ccc;
+    padding: 8px 16px;
+    cursor: pointer;
+    background: #f4f4f4;
+    display: inline-block;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+.flex .title{
+    font-size: 16px;
+}
+.submit-button {
+    width: 100%;
+    bottom: 0;
+    line-height:1rem;
+    height: 4rem;
+    padding: 12px 20px; /* 增加按钮的内填充 */
+    background-color: #0088ff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    position: fixed; /* 固定在底部 */
+    left: 0; /* 左边对齐 */
+    font-size: 14px;
+}
+#preview-image {
+    max-height: 100%; /* Limit image height to maintain layout */
+}

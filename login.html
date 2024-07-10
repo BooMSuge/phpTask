@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>登录</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://www.jq22.com/jquery/bootstrap-4.2.1.css">
+    <link rel="stylesheet" href="css/style.default.css" id="theme-stylesheet">
+</head>
+<body>
+<div class="page login-page">
+    <div class="container d-flex align-items-center">
+        <div class="form-holder has-shadow">
+            <div class="row">
+                <!-- Logo & Information Panel-->
+                <!-- Form Panel -->
+                <div class="col-lg-12 bg-white">
+                    <div class="form d-flex align-items-center">
+                        <div class="content">
+                            <form class="form-validate" id="loginForm">
+                                <div class="form-group">
+                                    <input id="login-username" type="text" name="userName" required data-msg="请输入用户名" placeholder="用户名" class="input-material">
+                                </div>
+                                <div class="form-group">
+                                    <input id="login-password" type="password" name="passWord" required data-msg="请输入密码" placeholder="密码" class="input-material">
+                                </div>
+                                <button type="button" class="btn btn-primary" id="loginBtn">登录</button>
+                                <div style="margin-top: 20px;">
+                                    <small>没有账号?</small><a href="register.html" class="signup">&nbsp;去注册</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- JavaScript files-->
+<script src="https://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+<script src="https://www.jq22.com/jquery/bootstrap-3.3.4.js"></script>
+<script>
+$(function() {
+    $("#loginBtn").click(function() {
+        $.ajax({
+            type: "POST",
+            url: "login.php",
+            data: {
+                userName: $("#login-username").val(),
+                passWord: $("#login-password").val()
+            },
+            dataType: "json", // Specify the expected response data type as JSON
+            success: function(response) {
+                if (response.success) {
+                    window.location.href = "index.html"; // Redirect if login is successful
+                } else {
+                    alert(response.message); // Show error message
+                }
+            },
+            error: function() {
+                alert("登录请求失败！");
+            }
+        });
+    });
+});
+
+</script>
+</body>
+</html>

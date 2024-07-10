@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>申请提现</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body { background-color: #fff; }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 16px auto;
+            background-color: #fff;
+            font-size: 12px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .toolbar-wrap {
+            padding: 10px 0;
+            min-height: 52px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-2 cbox">
+        <div class="left-icon">
+            <img src="./img/ico-go-back.png" alt="返回" onclick="window.location='index.html'" style="width: 16px; height: 16px;">
+            <div class="flex title" style="left:40px;cursor:pointer;" onclick="window.location='money.html';">提现</div>
+        </div>
+        <div class="flex title">提现金额</div>
+    </div>
+    <div class="container">
+        <form id="withdrawal-form">
+            <div class="form-group">
+                <label for="amount">提现金额:</label>
+                <input type="number" id="amount" name="amount" required>
+                <div id="balance-info" style="text-align: right; margin-top: 5px;">您的余额: <span id="user-balance">加载中...</span></div>
+            </div>
+            <div class="menu-item" style="justify-content: center;">
+                <button type="submit" class="submit-button">提交</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchUserBalance();
+
+            document.getElementById('withdrawal-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const amount = parseFloat(document.getElementById('amount').value);
+                const userBalance = parseFloat(window.userBalance);
+
+                if (amount > userBalance) {
+                    alert('提现金额不能大于余额');
+                    return;
+                }
+
+                const formData = new FormData(this);
+                submitWithdrawalRequest(formData);
+            });
+        });
+
+        function fetchUserBalance() {
+            fetch('get_user_balance.php')
+                .then(response => response.json())
+                .then(data => {
+                    const balance = parseFloat(data.balance);  // 确保balance是一个数字
+                    window.userBalance = balance;
+                    document.getElementById('user-balance').textContent = balance.toFixed(2); // 格式化为两位小数
+                })
+                .catch(error => {
+                    console.error('Error fetching user balance:', error);
+                    document.getElementById('user-balance').textContent = '加载失败';
+                });
+        }
+
+        function submitWithdrawalRequest(formData) {
+            fetch('submit_withdrawal.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('提现申请成功');
+                    window.location.href = 'money.html';
+                } else {
+                    alert('提现申请失败: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

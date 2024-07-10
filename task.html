@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>领取任务</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body { background-color: #f4f4f4; }
+        .card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ccc;
+            margin: 10px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .task-info {
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 14px;
+        }
+        .task-action button {
+            padding: 8px 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .task-action button:hover {
+            background-color: #0056b3;
+        }
+        .button.confirmed {
+            background-color: #4CAF50;
+        }
+        .button.rejected, .button.pending {
+            background-color: #ccc;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .modal {
+            display: none; /* 默认隐藏 */
+            position: fixed; /* 固定位置 */
+            z-index: 1; /* 置于顶层 */
+            left: 0;
+            top: 0;
+            width: 100%; /* 全屏宽 */
+            height: 100%; /* 全屏高 */
+            overflow: auto; /* 启用滚动条 */
+            background-color: rgb(0,0,0); /* 背景色 */
+            background-color: rgba(0,0,0,0.4); /* 背景色（带透明度） */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 30% auto; /* 15% 从顶部和自动水平 */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 70%; /* 宽度 */
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .modal-buttons button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .modal-buttons button.copy {
+            background-color: #007BFF;
+            color: white;
+        }
+        .modal-buttons button.copy:hover {
+            background-color: #0056b3;
+        }
+        .modal-buttons button.close {
+            background-color: #6c757d;
+            color: white;
+        }
+        .modal-buttons button.close:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+<div class="header-2 cbox">
+    <div class="left-icon">
+        <img src="./img/ico-go-back.png" alt="返回" onclick="window.location='index.html'" style="width: 16px; height: 16px;">
+        <div class="flex title" style="left:40px;cursor:pointer;" onclick="window.location='index.html';">首页</div>
+    </div>
+    <div class="flex title">领取任务</div>
+</div>
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <p id="notes-content"></p>
+        <div class="modal-buttons">
+            <button class="copy" onclick="copyToClipboard()">复制信息</button>
+            <button class="close" onclick="closeModal()">关闭</button>
+        </div>
+    </div>
+</div>
+<div id="tasks-container"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetchTasks();
+});
+
+function fetchTasks() {
+    fetch('get_my_claims.php')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.data.length > 0) {
+            const container = document.getElementById('tasks-container');
+            data.data.forEach(task => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const statusTextValue = statusText(task.status);
+                const buttonHTML = getButtonHTML(task);
+                card.innerHTML = `
+                    <div class="task-details">
+                        <div class="task-info">任务ID：${task.id}</div>
+                        <div class="task-info">任务码：${task.verification_code}</div>
+                        <div class="task-info">联系电话：${task.phone}</div>
+                        <div class="task-info">创建时间：${task.created_at}</div>
+                        <div class="task-info">用户名：${task.username}</div>
+                        <div class="task-info">任务状态：${statusTextValue}</div>
+                    </div>
+                    <div class="task-action">
+                        ${buttonHTML}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } else {
+            const container = document.getElementById('tasks-container');
+            container.innerHTML = `
+                <p>没有任务可显示</p>
+            `;
+        }
+    })
+    .catch(error => console.error('Failed to fetch tasks:', error));
+}
+
+function statusText(status) {
+    switch (status) {
+        case 'pending':
+            return '待处理';
+        case 'confirmed':
+            return '已确认';
+        case 'rejected':
+            return '已拒绝';
+        default:
+            return '未知状态';
+    }
+}
+
+function getButtonHTML(task) {
+    const baseClass = 'button ' + (task.status === 'confirmed' ? 'confirmed' : task.status === 'rejected' ? 'rejected' : 'pending');
+    const disabledAttribute = (task.status === 'pending' || task.status === 'rejected') ? ' disabled' : '';
+    const buttonText = task.status === 'pending' ? '等待确认' : '领取任务';
+    const onClickAttribute = task.status === 'confirmed' && task.notes ? ` onclick="showModal('${escapeQuotes(task.notes)}')"` : '';
+    return `<button class="${baseClass}"${disabledAttribute}${onClickAttribute}>${buttonText}</button>`;
+}
+
+function escapeQuotes(str) {
+    return str ? str.replace(/'/g, "\\'") : '';
+}
+
+function showModal(notes) {
+    console.log("Notes received:", notes); // 添加此行以调试接收到的notes数据
+    var modal = document.getElementById('modal');
+    var notesContent = document.getElementById('notes-content');
+    notesContent.innerText = notes; // 设置模态框中的文字
+    modal.style.display = "block"; // 显示模态框
+}
+
+function closeModal() {
+    var modal = document.getElementById('modal');
+    modal.style.display = "none"; // 隐藏模态框
+}
+
+function copyToClipboard() {
+    var notesContent = document.getElementById('notes-content');
+    console.log("Copying text:", notesContent.innerText); // 调试日志
+    var textArea = document.createElement("textarea");
+    textArea.value = notesContent.innerText;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        alert('复制成功！');
+    } catch (err) {
+        alert('复制失败！');
+    }
+    document.body.removeChild(textArea);
+}
+</script>
+</body>
+</html>

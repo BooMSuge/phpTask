@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>首页</title>
+    <link rel="stylesheet" href="css/styles.css" id="theme-stylesheet">
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="/layui/layui.js"></script>
+    <style>
+        .layui-layer-btn {
+    text-align: right;
+    padding: 0 15px 12px;
+    pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+}
+    </style>
+    <script>
+        window.onload = function() {
+            // 检查用户是否已登录
+            fetch('check_session.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        window.location.href = 'login.html'; // 如果未登录，重定向到登录页面
+                    } else {
+                        fetchUserDetails(); // 获取用户详细信息
+                        fetchAnnouncements(); // 获取公告信息
+                    }
+                })
+                .catch(error => console.error('Error checking session:', error));
+        };
+
+        function fetchUserDetails() {
+            fetch('get_user_details.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        var infoTexts = document.querySelectorAll('.info-text');
+                        infoTexts[0].textContent = '余额: ' + data.balance;
+                        infoTexts[1].textContent = '用户名: ' + data.username;
+                    } else {
+                        var infoTexts = document.querySelectorAll('.info-text');
+                        infoTexts.forEach(text => text.textContent = '无法获取数据');
+                    }
+                })
+                .catch(error => {
+                    console.error('无法获取用户详情:', error);
+                    var infoTexts = document.querySelectorAll('.info-text');
+                    infoTexts.forEach(text => text.textContent = '加载错误');
+                });
+        }
+
+        function fetchAnnouncements() {
+            fetch('get_announcements.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAnnouncements(data.announcements);
+                    }
+                })
+                .catch(error => {
+                    console.error('无法获取公告:', error);
+                });
+        }
+
+        function showAnnouncements(announcements) {
+            if (announcements.length === 0) return;
+
+            let index = 0;
+            (function showNext() {
+                if (index < announcements.length) {
+                    const announcement = announcements[index];
+                    layui.layer.open({
+                        type: 1,
+                        title: '公告',
+                        content: `<div>${announcement.content.replace(/\n/g, '<br>')}</div>`,
+                        area: ['90%', '90%'], // 调整宽度和高度
+                        btn: ['下一页'],
+                        btnAlign: 'c',
+                        shade: 0.3,
+                        shadeClose: true,
+                        skin: 'custom-announcement-popup',
+                        yes: function(layerIndex) {
+                            layui.layer.close(layerIndex);
+                            index++;
+                            showNext();
+                        }
+                    });
+                }
+            })();
+        }
+
+        layui.use(['layer', 'util'], function() {
+            var layer = layui.layer;
+            var util = layui.util;
+
+            // 批量事件
+            util.on('lay-on', {
+                alert: function() {
+                    fetchAnnouncements(); // 获取并显示公告
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="header-2">个人中心</div>
+    <a href="money.html" class="menu-link">
+        <div class="menu-item" style="margin-top: 0.46666666666666666rem;">
+            <span class="size">提现</span>
+            <div class="right-txt">
+                <span class="info-text">加载中...</span>
+                <img src="./img/r_b.png" class="arr-right">
+            </div>
+        </div>
+    </a>
+    <a href="password.html" class="menu-link">
+        <div class="menu-item" style="margin-top: 0.46666666666666666rem;">
+            <span class="size">更改登录密码</span>
+            <div class="right-txt">
+                <span class="info-text">加载中...</span>
+                <img src="./img/r_b.png" class="arr-right">
+            </div>
+        </div>
+    </a>
+    <a href="img.html" class="menu-link">
+        <div class="menu-item">
+            <span class="size">收款码上传或更改</span>
+            <div class="right-txt">
+                <img src="./img/r_b.png" class="arr-right">
+            </div>
+        </div>
+    </a>
+    <a href="request_claim.html" class="menu-link">
+        <div class="menu-item" style="margin-top: 0.46666666666666666rem;">
+            <span class="size">申请领取</span>
+            <div class="right-txt">
+                <img src="./img/r_b.png" class="arr-right">
+            </div>
+        </div>
+    </a>
+    <a href="task.html" class="menu-link">
+        <div class="menu-item">
+            <span class="size">领取地址</span>
+            <div class="right-txt">
+                <img src="./img/r_b.png" class="arr-right">
+            </div>
+        </div>
+    </a>
+    <a href="logout.php" class="menu-link">
+        <div class="menu-item" style="margin-top: 0.46666666666666666rem;">
+            <span class="size">退出登录</span>
+        </div>
+    </a>
+</body>
+</html>
